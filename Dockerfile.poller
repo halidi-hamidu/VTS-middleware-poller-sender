@@ -1,0 +1,27 @@
+# Dockerfile for Poller Service
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install --production
+
+# Copy poller application files
+COPY poller.js .
+
+# Create logs directory and initialize empty lastSentPositions.json
+RUN mkdir -p logs && echo '{}' > lastSentPositions.json
+
+# Expose port
+EXPOSE 2000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:2000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Start the poller service
+CMD ["node", "poller.js"]

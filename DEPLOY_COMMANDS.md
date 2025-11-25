@@ -43,9 +43,8 @@ docker compose -f docker-compose.server69.sender.prod.yml logs -f
 # Connect to server
 ssh user@93.127.139.107
 
-# Create directories
+# Create directory and logs folder
 sudo mkdir -p /opt/traccar-middleware && cd /opt/traccar-middleware
-sudo mkdir -p /var/lib/traccar-poller && sudo chmod 755 /var/lib/traccar-poller
 mkdir -p logs
 
 # Verify Traccar is running
@@ -54,7 +53,7 @@ curl http://localhost:8082/api/server
 # Download compose file
 wget https://raw.githubusercontent.com/halidi-hamidu/VTS-middleware-poller-sender/main/docker-compose.server93.poller.prod.yml
 
-# Deploy
+# Deploy (Docker will auto-create the volume)
 docker compose -f docker-compose.server93.poller.prod.yml pull
 docker compose -f docker-compose.server93.poller.prod.yml up -d
 

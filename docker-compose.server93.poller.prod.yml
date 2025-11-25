@@ -1,0 +1,86 @@
+# Production Docker Compose for Server 93 (93.127.139.107)
+# Runs ONLY Poller Service
+# 
+# NO .env FILE REQUIRED - All variables are hardcoded here
+# 
+# Usage: 
+#   docker compose -f docker-compose.server93.poller.prod.yml pull
+#   docker compose -f docker-compose.server93.poller.prod.yml up -d
+#
+# To update credentials, edit this file directly
+
+services:
+  poller:
+    image: ghcr.io/halidi-hamidu/vts-middleware-poller:latest
+    container_name: traccar-poller-prod
+    restart: unless-stopped
+    network_mode: host
+    
+    environment:
+      # Node environment
+      - NODE_ENV=production
+      - PORT=2000
+      
+      # Traccar Configuration (local on server 93)
+      # IMPORTANT: Change these if your Traccar credentials are different
+      - TRACCAR_BASE=http://localhost:8082/api
+      - TRACCAR_USERNAME=admin
+      - TRACCAR_PASSWORD=admin
+      
+      # Sender URL (remote on server 69)
+      # This is where the poller will send data
+      - TUNNEL_URL=http://69.197.176.231:4000/traccar/
+    
+    volumes:
+      - poller-data:/app
+      - ./logs:/app/logs
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:2000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Read-only root filesystem (except for specific mounts)
+    read_only: false
+    
+    # User (run as non-root if possible)
+    # user: "1000:1000"  # Uncomment if needed
+
+volumes:
+  poller-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/traccar-poller
+
+# Optional: Add monitoring labels
+# labels:
+#   - "com.docker.compose.project=traccar-middleware"
+#   - "com.docker.compose.service=poller"
+#   - "environment=production"
+#   - "server=93"

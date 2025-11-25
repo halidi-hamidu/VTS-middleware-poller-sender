@@ -8,13 +8,16 @@ services:
         - ghcr.io/halidi-hamidu/vts-middleware-poller:latest
     container_name: traccar-poller
     ports:
-      - "2000:2000"
+      - "${POLLER_PORT:-2000}:2000"
     networks:
       - traccar-network
     environment:
-      - NODE_ENV=production
-      - TRACCAR_BASE=http://69.197.176.231:8082/api
-      - TUNNEL_URL=http://sender:4000/traccar/
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=2000
+      - TRACCAR_BASE=${TRACCAR_BASE:-http://69.197.176.231:8082/api}
+      - TRACCAR_USERNAME=${TRACCAR_USERNAME:-admin}
+      - TRACCAR_PASSWORD=${TRACCAR_PASSWORD:-admin}
+      - TUNNEL_URL=${TUNNEL_URL:-http://sender:4000/traccar/}
     volumes:
       - poller-data:/app
       - ./logs:/app/logs
@@ -37,14 +40,14 @@ services:
         - ghcr.io/halidi-hamidu/vts-middleware-sender:latest
     container_name: traccar-sender
     ports:
-      - "4000:4000"
+      - "${SENDER_PORT:-4000}:4000"
     networks:
       - traccar-network
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=4000
-      - BSMART_API_URL=http://vts.latra.go.tz:8090/data-integration/integration/gps
-      - BSMART_API_TOKEN=d2ViY29ycGx0ZDp3ZWJjMHJwQDIwMjU=
+      - BSMART_API_URL=${BSMART_API_URL:-http://vts.latra.go.tz:8090/data-integration/integration/gps}
+      - BSMART_API_TOKEN=${BSMART_API_TOKEN}
     volumes:
       - ./logs:/app/logs
     restart: unless-stopped

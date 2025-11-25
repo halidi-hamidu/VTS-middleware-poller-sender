@@ -4,15 +4,18 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 2000;
+const PORT = process.env.PORT || 2000;
 
-// ---------------- CONFIG ----------------
+// ---------------- CONFIG (All from environment variables) ----------------
 const TRACCAR_BASE = process.env.TRACCAR_BASE || 'http://69.197.176.231:8082/api';
 const POSITIONS_API = `${TRACCAR_BASE}/positions`;
 const DEVICES_API = `${TRACCAR_BASE}/devices`;
 const TUNNEL_URL = process.env.TUNNEL_URL || 'http://localhost:4000/traccar/';
 
-const AUTH = { username: 'admin', password: 'admin' };
+const AUTH = { 
+  username: process.env.TRACCAR_USERNAME || 'admin', 
+  password: process.env.TRACCAR_PASSWORD || 'admin' 
+};
 const PERSIST_FILE = path.join(__dirname, 'lastSentPositions.json');
 
 // ---------------- STATE ----------------

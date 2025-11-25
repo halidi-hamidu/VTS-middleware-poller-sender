@@ -1,0 +1,62 @@
+# Production Docker Compose for Server 69 (69.197.176.231)
+# Runs ONLY Sender Service
+# Usage: docker compose -f docker-compose.server69.prod.yml up -d
+
+services:
+  sender:
+    image: ghcr.io/halidi-hamidu/vts-middleware-sender:latest
+    container_name: traccar-sender-prod
+    restart: unless-stopped
+    network_mode: host
+    
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=4000
+      # Forward to BSMART/Latra API
+      - BSMART_API_URL=${BSMART_API_URL:-http://vts.latra.go.tz:8090/data-integration/integration/gps}
+      - BSMART_API_TOKEN=${BSMART_API_TOKEN}
+    
+    volumes:
+      - ./logs:/app/logs
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Read-only root filesystem (except for specific mounts)
+    read_only: false
+    
+    # User (run as non-root if possible)
+    # user: "1000:1000"  # Uncomment if needed
+
+# Optional: Add monitoring labels
+# labels:
+#   - "com.docker.compose.project=traccar-middleware"
+#   - "com.docker.compose.service=sender"
+#   - "environment=production"
+#   - "server=69"

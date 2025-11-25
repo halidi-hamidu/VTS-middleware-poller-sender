@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 2000;
 
 // ---------------- CONFIG (All from environment variables) ----------------
-const TRACCAR_BASE = process.env.TRACCAR_BASE || 'http://69.197.176.231:8082/api';
+const TRACCAR_BASE = process.env.TRACCAR_BASE;
 const POSITIONS_API = `${TRACCAR_BASE}/positions`;
 const DEVICES_API = `${TRACCAR_BASE}/devices`;
 const TUNNEL_URL = process.env.TUNNEL_URL || 'http://localhost:4000/traccar/';

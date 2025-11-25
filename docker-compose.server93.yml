@@ -1,0 +1,36 @@
+# Docker Compose for Poller on Server 93 (93.127.139.107)
+# This service fetches data from Traccar on server 93 and sends to Sender on server 69
+
+services:
+  poller:
+    image: ghcr.io/halidi-hamidu/vts-middleware-poller:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.poller
+    container_name: traccar-poller
+    ports:
+      - "${POLLER_PORT:-2000}:2000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=2000
+      # Fetch from local Traccar on server 93
+      - TRACCAR_BASE=${TRACCAR_BASE:-http://localhost:8082/api}
+      - TRACCAR_USERNAME=${TRACCAR_USERNAME:-admin}
+      - TRACCAR_PASSWORD=${TRACCAR_PASSWORD:-admin}
+      # Send to Sender on remote server 69
+      - TUNNEL_URL=${TUNNEL_URL:-http://69.197.176.231:4000/traccar/}
+    volumes:
+      - poller-data:/app
+      - ./logs:/app/logs
+    restart: unless-stopped
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:2000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  poller-data:
+    driver: local

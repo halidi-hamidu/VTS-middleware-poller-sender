@@ -32,7 +32,8 @@ services:
       - TUNNEL_URL=http://69.197.176.231:4000/traccar/
     
     volumes:
-      - poller-data:/app
+      # Use Docker-managed volume (no directory creation needed)
+      - poller-data:/app/data
       - ./logs:/app/logs
     
     # Resource limits
@@ -72,11 +73,7 @@ services:
 
 volumes:
   poller-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /var/lib/traccar-poller
+    # Docker-managed volume (automatic creation, no manual setup needed)
 
 # Optional: Add monitoring labels
 # labels:
